@@ -46,13 +46,16 @@ def cli():
 def init(difficulty):
     """Initialize local blockchain"""
     print """
-  ____    _                  _       _____   _              _   _
- |  _ \  | |                | |     / ____| | |            | | | |
- | |_) | | |   ___     ___  | | __ | (___   | |__     ___  | | | |
- |  _ <  | |  / _ \   / __| | |/ /  \___ \  | '_ \   / _ \ | | | |
- | |_) | | | | (_) | | (__  |   <   ____) | | | | | |  __/ | | | |
- |____/  |_|  \___/   \___| |_|\_\ |_____/  |_| |_|  \___| |_| |_|
+$$\   $$\ $$\                      $$$$$$\            $$\           
+$$$\  $$ |\__|                    $$  __$$\           \__|          
+$$$$\ $$ |$$\  $$$$$$$\  $$$$$$\  $$ /  \__| $$$$$$\  $$\ $$$$$$$\  
+$$ $$\$$ |$$ |$$  _____|$$  __$$\ $$ |      $$  __$$\ $$ |$$  __$$\ 
+$$ \$$$$ |$$ |$$ /      $$$$$$$$ |$$ |      $$ /  $$ |$$ |$$ |  $$ |
+$$ |\$$$ |$$ |$$ |      $$   ____|$$ |  $$\ $$ |  $$ |$$ |$$ |  $$ |
+$$ | \$$ |$$ |\$$$$$$$\ \$$$$$$$\ \$$$$$$  |\$$$$$$  |$$ |$$ |  $$ |
+\__|  \__|\__| \_______| \_______| \______/  \______/ \__|\__|  \__|
 
+ Example: $ dotx {"inputs":[{"addr":${IN},"value":${amount}}],"outputs":[{"addr":${OUT1},"value":${amount1}},{"addr":${OUT2},"value":${amount2}}]}
  > A command line utility for learning Blockchain concepts.
  > Type 'help' to see supported commands.
  > Project by Daxeel Soni - https://daxeel.github.io
@@ -64,10 +67,12 @@ def init(difficulty):
 
     # Start blockshell shell
     while True:
-        cmd = raw_input("[BlockShell] $ ")
+        cmd = raw_input("[BlockShell@NiceCoin] $ ")
         processInput(cmd)
 
 # Process input from Blockshell shell
+
+
 def processInput(cmd):
     """
         Method to process user input from Blockshell CLI.
@@ -90,10 +95,23 @@ def dotx(cmd):
         Do Transaction - Method to perform new transaction on blockchain.
     """
     txData = cmd.split("dotx ")[-1]
-    if "{" in txData:
-        txData = json.loads(txData)
-    print "Doing transaction..."
-    coin.addBlock(Block(data=txData))
+    # try:
+    txData = json.loads(txData)
+    input0, value = txData["inputs"][0]["addr"], txData["inputs"][0]["value"]
+    output1, output2 = txData["outputs"][0]["addr"], txData["outputs"][1]["addr"]
+    value1, value2 = txData["outputs"][0]["value"], txData["outputs"][1]["value"]
+    if input0 == "" or output1 == "" or output2 == "" or value-value1-value2<0:
+        print "Transaction Format Error"
+    else:
+        print "===========================================================================\n"
+        print "INPUT: " + input0 + " Value:" + str(value) + "\nTO===>OUTPUT 1:"+output1 + \
+                " Value:" + str(value1) + "\nTO===>OUTPUT 2:"+output2+" Value:" + str(value2) + "\n"
+        print "===========================================================================\n"
+        print "Doing transaction..."
+        coin.addBlock(Block(data=txData))
+    # except:
+    #     print "Transaction Format Error"
+
 
 def allblocks(cmd):
     """
@@ -103,6 +121,7 @@ def allblocks(cmd):
     for eachBlock in coin.chain:
         print eachBlock.hash
     print ""
+
 
 def getblock(cmd):
     """
@@ -115,6 +134,7 @@ def getblock(cmd):
             print eachBlock.__dict__
             print ""
 
+
 def help(cmd):
     """
         Method to display supported commands in Blockshell
@@ -123,6 +143,7 @@ def help(cmd):
     print "   dotx <transaction data>    Create new transaction"
     print "   allblocks                  Fetch all mined blocks in blockchain"
     print "   getblock <block hash>      Fetch information about particular block"
+
 
 def throwError(msg):
     """

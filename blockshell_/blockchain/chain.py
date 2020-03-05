@@ -58,24 +58,6 @@ class Block:
         print Back.BLUE + "[ Info ] Mined Hash : " + self.hash
         print Style.RESET_ALL
 
-    def checkTransaction(self):
-        infos = self.data.split(":")
-        # check transaction format
-        if len(infos) != 3:
-            return False
-        try:
-            int(infos[1])
-        except ValueError:
-            return False
-            
-    
-    def RepresentsInt(s):
-        try: 
-            int(s)
-            return True
-        except ValueError:
-            return False
-
 
 # ==================================================
 # ================ BLOCKCHAIN CLASS ================
@@ -86,7 +68,12 @@ class Blockchain:
         Initialize blockchain
     """
     def __init__(self):
-        self.chain = [self.createGenesisBlock()]
+        #Send NiceCoin * 12 to Alice Bob and Peter
+        self.chain = [self.createGenesisBlock(),Block(json.loads(
+            '''
+            {"inputs":[{"addr":"GOD","value":36}],"outputs":[{"addr":"ADDRALICE","value":12},{"addr":"ADDRBOB","value":12},{"addr":"ADDRPETER","value":12}]}
+            ''')
+        )]
         self.difficulty = 3
 
     def createGenesisBlock(self):
@@ -99,11 +86,39 @@ class Blockchain:
         """
             Method to add new block from Block class
         """
+        print "Checking All Recorded Block for Transaction ... "
+        if self.checkTransation(newBlock.data["inputs"][0]["addr"],newBlock.data["inputs"][0]["value"]):
+            print "Transaction Checked [OK]"
+        else:
+            print "Transaction Checked [ERROR] : The Block Can't be validated due to some problem transaction"
+            return
         newBlock.index = len(self.chain)
         newBlock.previousHash = self.chain[-1].hash
         newBlock.mineBlock(self.difficulty)
         self.chain.append(newBlock)
         self.writeBlocks()
+
+    def checkTransation(self,sender,value):
+        balance=0
+        # Because we have in/out for each transaction, and each time we
+        # create a transaction we check that in - out = 0, so we only
+        # need to find the last transaction in which the sender is an 
+        # OUTPUT
+        for eachBlock in self.chain:
+            print "checking Block " + str(eachBlock.index)
+            trans = eachBlock.data
+            if trans == "Genesis Block" :
+                continue
+            for output in trans["outputs"]:
+                if output["addr"] == sender:
+                    balance = int(output["value"])
+        if value < balance:
+            print "Wrong balance[ERROR]"
+        if value > balance:
+            print "Not enough balance[ERROR]"
+        print sender + " HAS " + str(balance) + " NiceCoin"
+        return value == balance
+
 
     def writeBlocks(self):
         """
